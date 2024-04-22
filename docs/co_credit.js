@@ -44,14 +44,65 @@
 
 */
 
+window.addEventListener('load', function() {
+   // Retrieve field values attached to the query string of the URL
+   var orderData = window.location.search.slice(1).replace(/\+/g, ' ');
+   orderData = decodeURIComponent(orderData);
+   
+   // Split the orderData at every occurrence of a & or = character and store the substrings in the orderFields array variable
+   var orderFields = orderData.split(/[&=]/);
+
+   // Write values from the orderFields array into the indicated fields of the order form
+   document.getElementById('modelName').value = orderFields[3];
+   document.getElementById('modelQty').value = orderFields[5];
+   document.getElementById('orderCost').value = orderFields[7];
+   document.getElementById('shippingType').value = orderFields[9];
+   document.getElementById('shippingCost').value = orderFields[13];
+   document.getElementById('subTotal').value = orderFields[15];
+   document.getElementById('salesTax').value = orderFields[17];
+   document.getElementById('cartTotal').value = orderFields[19];
+});
 
 
+// Event listener for running different validation event handlers
+window.addEventListener('load', function() {
+   var subButton = document.getElementById('subButton');
+   subButton.addEventListener('click', runSubmit);
+
+   var cardHolder = document.getElementById('cardHolder');
+   cardHolder.addEventListener('input', validateName);
+
+   var cardNumber = document.getElementById('cardNumber');
+   cardNumber.addEventListener('input', validateNumber);
+
+   var expDate = document.getElementById('expDate');
+   expDate.addEventListener('input', validateDate);
+
+   var cvc = document.getElementById('cvc');
+   cvc.addEventListener('input', validateCVC);
+});
 
 
+function runSubmit() {
+   validateName();
+   validateCredit();
+   validateNumber();
+   validateDate();
+   validateCVC();
+}
 
+function validateDate() {
+   var expDate = document.getElementById("expDate");
+   var expDatePattern = /^(0[1-9]|1[0-2])\/?([0-9]{2})$/;
 
-
-
+   if (expDate.validity.valueMissing) {
+      expDate.setCustomValidity("Enter the expiration date");
+   } else if (!expDatePattern.test(expDate.value)) {
+      expDate.setCustomValidity("Enter a valid expiration date");
+   } else {
+      expDate.setCustomValidity("");
+   }
+}
 
 
 
