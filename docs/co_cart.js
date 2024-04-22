@@ -23,73 +23,76 @@
       numeric format to the number of decimal
       places specified by decimals
       
-   formatUSACurrency(val)
+   formatUSCurrency(val)
       Formats val as U.S.A. currency
    
 */ 
 
-// Event listener for window load event
 window.addEventListener('load', function() {
-    // Run the calcCart() function when the page is loaded
-    calcCart();
+   calcCart(); // Runs the calcCart() function when the page is loaded
 
-    // Run the calcCart() function when the field value is changed
-    var modelQtyField = document.getElementById('modelQty');
-    modelQtyField.addEventListener('change', function() {
-        calcCart();
-    });
+   var modelQty = document.getElementById('modelQty');
+   modelQty.addEventListener('change', function() {
+      calcCart(); // Runs the calcCart() function when the field value is changed
+   });
 
-    // Use a for loop to add event handlers to shipping option buttons
-    var shippingOptions = document.getElementsByName('shipping');
-    for (var i = 0; i < shippingOptions.length; i++) {
-        shippingOptions[i].addEventListener('click', function() {
-            calcCart();
-        });
-    }
+   var shippingOptions = document.querySelectorAll('input[name="shipping"]');
+   for (var i = 0; i < shippingOptions.length; i++) {
+      shippingOptions[i].addEventListener('click', function() {
+         calcCart(); // Adds an event handler to run calcCart() function when each option button is clicked
+      });
+   }
 });
 
-// Function to calculate the cost of the customer's order
+
+
+
 function calcCart() {
-    // Get the quantity of machines ordered
-    var modelQty = parseInt(document.getElementById('modelQty').value);
+   // Retrieve field values
+   var modelCost = parseFloat(document.getElementById('modelCost').value);
+   var modelQty = parseInt(document.getElementById('modelQty').value);
+   var shippingOptions = document.getElementsByName('shipping');
+   var shippingCost = 0;
+   var shippingType = '';
 
-    // Get the cost of the espresso machine
-    var modelCost = parseFloat(document.getElementById('modelCost').value);
+   // Calculate order cost
+   var orderCost = modelCost * modelQty;
+   document.getElementById('orderCost').value = formatUSCurrency(orderCost);
 
-    // Calculate the order cost
-    var orderCost = modelCost * modelQty;
-    document.getElementById('orderCost').value = formatUSCurrency(orderCost);
+   // Calculate shipping cost based on selected option
+   for (var i = 0; i < shippingOptions.length; i++) {
+      if (shippingOptions[i].checked) {
+         shippingCost = parseFloat(shippingOptions[i].value) * modelQty;
+         shippingType = shippingOptions[i].nextSibling.nodeValue.trim(); // Retrieve label text
+         break;
+      }
+   }
+   document.getElementById('shippingCost').value = formatNumber(shippingCost, 2);
 
-    // Get the selected shipping option
-    var selectedShipping = parseFloat(document.querySelector('input[name="shipping"]:checked').value);
+   // Calculate subtotal
+   var subTotal = orderCost + shippingCost;
+   document.getElementById('subTotal').value = formatNumber(subTotal, 2);
 
-    // Calculate the shipping cost
-    var shipCost = selectedShipping * modelQty;
-    document.getElementById('shippingCost').value = formatNumber(shipCost);
+   // Calculate sales tax
+   var salesTax = 0.05 * subTotal;
+   document.getElementById('salesTax').value = formatNumber(salesTax, 2);
 
-    // Calculate the subtotal
-    var subTotal = orderCost + shipCost;
-    document.getElementById('subTotal').value = formatNumber(subTotal);
+   // Calculate total
+   var cartTotal = subTotal + salesTax;
+   document.getElementById('cartTotal').value = formatUSCurrency(cartTotal);
 
-    // Calculate the sales tax
-    var salesTax = 0.05 * subTotal;
-    document.getElementById('salesTax').value = formatNumber(salesTax);
-
-    // Calculate the total
-    var cartTotal = subTotal + salesTax;
-    document.getElementById('cartTotal').value = formatUSCurrency(cartTotal);
-
-    // Store the label text of the selected shipping option
-    var shippingType = document.querySelector('input[name="shipping"]:checked + label').innerText;
-    document.getElementById('shippingType').value = shippingType;
+   // Store shipping type in hidden field
+   document.getElementById('shippingType').value = shippingType;
 }
 
-// Function to format a number as U.S. currency
-function formatUSCurrency(number) {
-    return '$' + number.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+
+
+
+function formatNumber(val, decimals) {
+   return val.toLocaleString(undefined, {minimumFractionDigits: decimals, 
+                                         maximumFractionDigits: decimals});
 }
 
-// Function to format a number with thousands separator and two decimal places
-function formatNumber(number) {
-    return number.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+function formatUSCurrency(val) {
+   return val.toLocaleString('en-US', {style: "currency", currency: "USD"} );
 }
